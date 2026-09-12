@@ -9,7 +9,6 @@ class Player extends EventEmitter {
     this._volume = 100;
     this._startTime = null;
     this._elapsed = 0;
-    this._pauseStart = null;
   }
 
   play(filePath) {
@@ -51,7 +50,6 @@ class Player extends EventEmitter {
     // SIGSTOP freezes the process at the OS level
     this._process.kill('SIGSTOP');
     this._paused = true;
-    this._pauseStart = Date.now();
 
     // Fold current segment's elapsed time into _elapsed
     this._elapsed += (Date.now() - this._startTime) / 1000;
@@ -67,7 +65,6 @@ class Player extends EventEmitter {
     this._process.kill('SIGCONT');
     this._paused = false;
     this._startTime = Date.now();
-    this._pauseStart = null;
   }
 
   stop() {
@@ -79,7 +76,6 @@ class Player extends EventEmitter {
     this._paused = false;
     this._startTime = null;
     this._elapsed = 0;
-    this._pauseStart = null;
   }
 
   togglePause() {
