@@ -137,7 +137,7 @@ class UI {
     output += divider + '\n';
 
     // Controls legend
-    output += this._chalk.gray('Controls: [Space] Play/Pause  [N] Next  [P] Back  [S] Stop  [V] Vol  [R] Repeat  [H] Shuffle  [Q] Quit\n');
+    output += this._chalk.gray('Controls: [P] Play/Pause  [N] Next  [B] Back  [S] Stop  [V] Vol  [R] Repeat  [H] Shuffle  [Q] Quit\n');
     output += this._chalk.gray('           [1-9] Jump to track\n');
 
     output += divider + '\n';

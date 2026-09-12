@@ -129,6 +129,7 @@ async function handleQuit() {
  */
 function handleKey(key) {
   switch (key) {
+    case ' ':
     case 'p': {
       // Play/Pause toggle
       if (!player.isActive) {

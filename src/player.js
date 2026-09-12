@@ -15,7 +15,7 @@ class Player extends EventEmitter {
     this.stop();
 
     // Spawn ffplay with audio-only flags
-    this._process = spawn('ffplay', [
+    const proc = spawn('ffplay', [
       '-nodisp',                    // no video window
       '-autoexit',                  // exit when song ends
       '-volume', String(this._volume),  // ffplay expects 0-100 scale
@@ -25,22 +25,27 @@ class Player extends EventEmitter {
       stdio: ['ignore', 'ignore', 'ignore']  // Ignore all stdio to avoid file descriptor issues
     });
 
+    this._process = proc;
     this._paused = false;
     this._elapsed = 0;
     this._startTime = Date.now();
 
     // Handle process close (song finished or user stopped it)
-    this._process.on('close', (code) => {
-      if (code === 0) {
-        this.emit('end');
+    proc.on('close', (code) => {
+      if (this._process === proc) {
+        this._process = null;
+        if (code === 0) {
+          this.emit('end');
+        }
       }
-      this._process = null;
     });
 
     // Handle process errors
-    this._process.on('error', (error) => {
-      this.emit('error', error);
-      this._process = null;
+    proc.on('error', (error) => {
+      if (this._process === proc) {
+        this._process = null;
+        this.emit('error', error);
+      }
     });
   }
 
@@ -92,7 +97,6 @@ class Player extends EventEmitter {
     }
 
     const processRef = this._process;
-    const pid = processRef.pid;
     this._process = null;
     this._paused = false;
     this._startTime = null;
@@ -111,21 +115,12 @@ class Player extends EventEmitter {
 
       // Set a hard timeout - if process doesn't exit in 3 seconds, give up
       const timeout = setTimeout(() => {
-        // Timeout firing means events didn't fire, so just resolve
         resolveOnce();
       }, 3000);
 
-      // Wait for the process to actually emit the exit event
-      const onExit = () => {
-        resolveOnce();
-      };
-
-      const onClose = () => {
-        resolveOnce();
-      };
-
-      processRef.once('exit', onExit);
-      processRef.once('close', onClose);
+      // Wait for the process to actually emit exit or close
+      processRef.once('exit', resolveOnce);
+      processRef.once('close', resolveOnce);
 
       // Send SIGKILL to terminate the process
       try {
