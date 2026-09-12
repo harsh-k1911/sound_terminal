@@ -105,6 +105,26 @@ function setMessage(msg, clearAfter = 2000) {
 }
 
 /**
+ * Gracefully quit the app, ensuring ffplay is terminated before exit
+ */
+async function handleQuit() {
+  stopRenderLoop();
+  process.stdout.write('\x1B[?25h'); // Show cursor
+  
+  // Disconnect stdin so Node doesn't wait for it
+  if (process.stdin.isTTY) {
+    process.stdin.setRawMode(false);
+  }
+  process.stdin.pause();
+  
+  // Wait for player to fully stop before exiting to prevent orphaned processes
+  await player.stopAndWait();
+  
+  console.log('Goodbye!');
+  process.exit(0);
+}
+
+/**
  * Handle a single keypress
  */
 function handleKey(key) {
@@ -191,12 +211,12 @@ function handleKey(key) {
     }
 
     case 'q': {
-      // Quit
-      player.stop();
-      stopRenderLoop();
-      process.stdout.write('\x1B[?25h'); // Show cursor
-      console.log('Goodbye!');
-      process.exit(0);
+      // Quit (handle asynchronously to ensure clean shutdown)
+      handleQuit().catch((err) => {
+        console.error('Error during quit:', err.message);
+        process.exit(1);
+      });
+      break;
     }
 
     default: {

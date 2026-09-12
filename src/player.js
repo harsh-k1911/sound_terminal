@@ -18,10 +18,12 @@ class Player extends EventEmitter {
     this._process = spawn('ffplay', [
       '-nodisp',                    // no video window
       '-autoexit',                  // exit when song ends
-      '-volume', String(this._volume / 100),  // ffplay uses 0.0-1.0 scale
+      '-volume', String(this._volume),  // ffplay expects 0-100 scale
       '-loglevel', 'quiet',         // suppress ffplay's verbose output
       filePath
-    ]);
+    ], {
+      stdio: ['ignore', 'ignore', 'ignore']  // Ignore all stdio to avoid file descriptor issues
+    });
 
     this._paused = false;
     this._elapsed = 0;
@@ -76,6 +78,63 @@ class Player extends EventEmitter {
     this._paused = false;
     this._startTime = null;
     this._elapsed = 0;
+  }
+
+  /**
+   * Stops playback and returns a Promise that resolves when the process has
+   * actually exited. Used during shutdown to ensure ffplay is terminated
+   * before the app exits, preventing orphaned audio playback.
+   * @returns {Promise<void>}
+   */
+  async stopAndWait() {
+    if (!this._process) {
+      return;
+    }
+
+    const processRef = this._process;
+    const pid = processRef.pid;
+    this._process = null;
+    this._paused = false;
+    this._startTime = null;
+    this._elapsed = 0;
+
+    return new Promise((resolve) => {
+      let resolved = false;
+
+      const resolveOnce = () => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          resolve();
+        }
+      };
+
+      // Set a hard timeout - if process doesn't exit in 3 seconds, give up
+      const timeout = setTimeout(() => {
+        // Timeout firing means events didn't fire, so just resolve
+        resolveOnce();
+      }, 3000);
+
+      // Wait for the process to actually emit the exit event
+      const onExit = () => {
+        resolveOnce();
+      };
+
+      const onClose = () => {
+        resolveOnce();
+      };
+
+      processRef.once('exit', onExit);
+      processRef.once('close', onClose);
+
+      // Send SIGKILL to terminate the process
+      try {
+        processRef.kill('SIGKILL');
+      } catch (err) {
+        // Process already dead or error, just resolve
+        resolveOnce();
+      }
+    });
   }
 
   togglePause() {
