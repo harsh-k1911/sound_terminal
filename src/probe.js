@@ -2,6 +2,16 @@ const { execFile } = require('child_process');
 
 /**
  * Gets the duration of an MP3 file using ffprobe.
+ * 
+ * IMPORTANT: This function NEVER rejects the promise, even if:
+ * - ffprobe is missing from PATH entirely
+ * - The file doesn't exist
+ * - The file is corrupted or not an MP3
+ * - Any other error occurs
+ * 
+ * Instead, it resolves to 0 on any error. This ensures that one bad file
+ * doesn't crash the entire probing process during queue initialization.
+ * 
  * @param {string} filePath - Path to the MP3 file
  * @returns {Promise<number>} Duration in seconds, or 0 if probe fails
  */

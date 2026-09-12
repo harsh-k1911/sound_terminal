@@ -121,6 +121,11 @@ class Player extends EventEmitter {
   }
 
   setVolume(v) {
+    // Guard against non-number values (NaN, strings, Infinity, etc.)
+    if (typeof v !== 'number' || isNaN(v) || !isFinite(v)) {
+      return;
+    }
+    
     // Clamp between 0 and 100
     this._volume = Math.max(0, Math.min(100, v));
     

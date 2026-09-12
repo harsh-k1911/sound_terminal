@@ -8,6 +8,14 @@ const Queue = require('./src/queue.js');
 const UI = require('./src/ui.js');
 const { probeAll } = require('./src/probe.js');
 
+// Safety net: restore cursor and exit cleanly on SIGINT (Ctrl+C)
+// This handles Ctrl+C before setupKeyboard() has a chance to handle it
+process.on('SIGINT', () => {
+  process.stdout.write('\x1B[?25h'); // Show cursor
+  console.log('\nGoodbye!');
+  process.exit(0);
+});
+
 // Module-level state
 const player = new Player();
 const queue = new Queue();
