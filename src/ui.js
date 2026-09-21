@@ -78,6 +78,13 @@ class UI {
 
     output += trackLine + '\n';
 
+    if (state.track && state.track.artist) {
+      const artist = state.track.artist.length > termWidth - 7
+        ? state.track.artist.substring(0, termWidth - 10) + '...'
+        : state.track.artist;
+      output += `  by ${this._chalk.gray(artist)}\n`;
+    }
+
     // Progress bar
     const elapsedStr = this._fmt(state.elapsed);
     const totalStr = this._fmt(state.track?.duration || 0);

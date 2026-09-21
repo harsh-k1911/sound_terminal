@@ -22,7 +22,9 @@ class Queue {
     this._tracks = files.map(file => ({
       title: path.parse(file).name,
       filePath: path.join(dirPath, file),
-      duration: 0
+      duration: 0,
+      artist: '',
+      album: ''
     }));
 
     this._index = 0;
@@ -41,13 +43,25 @@ class Queue {
     this._tracks.push({
       title: path.parse(filePath).name,
       filePath: filePath,
-      duration: 0
+      duration: 0,
+      artist: '',
+      album: ''
     });
   }
 
   setDuration(index, seconds) {
     if (index >= 0 && index < this._tracks.length) {
       this._tracks[index].duration = seconds;
+    }
+  }
+
+  setMetadata(index, metadata) {
+    if (index >= 0 && index < this._tracks.length && metadata) {
+      if (metadata.title && metadata.title.trim() !== '') {
+        this._tracks[index].title = metadata.title.trim();
+      }
+      this._tracks[index].artist = metadata.artist || '';
+      this._tracks[index].album = metadata.album || '';
     }
   }
 

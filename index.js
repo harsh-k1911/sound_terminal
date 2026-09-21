@@ -295,11 +295,11 @@ async function main() {
       process.exit(1);
     }
 
-    // Show loading screen and probe durations
-    ui.renderLoading(`Loading ${queue.total} track(s)...`);
+    // Show loading screen and probe durations and metadata
+    ui.renderLoading(`Loading tracks and metadata...`);
 
     await probeAll(queue, (done, total) => {
-      ui.renderLoading(`Probing tracks... ${done}/${total}`);
+      ui.renderLoading(`Probing tracks and metadata... ${done}/${total}`);
     });
 
     // Hide the cursor (we'll take over the terminal)
