@@ -124,7 +124,9 @@ class Queue {
   }
 
   prev() {
+    const oldIndex = this._index;
     if (this._tracks.length === 0) {
+      console.error(`[DEBUG queue.prev()] Called on empty queue, index=${oldIndex}`);
       return null;
     }
 
@@ -134,6 +136,7 @@ class Queue {
       this._index--;
     }
 
+    console.error(`[DEBUG queue.prev()] Called: _index changed from ${oldIndex} to ${this._index}`);
     return this._tracks[this._index];
   }
 

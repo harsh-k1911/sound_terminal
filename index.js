@@ -167,7 +167,9 @@ function handleKey(key) {
 
     case 'b': {
       // Previous track
+      console.error(`[DEBUG handleKey 'b'] BEFORE queue.prev(): currentIndex=${queue.currentIndex}`);
       const prevTrack = queue.prev();
+      console.error(`[DEBUG handleKey 'b'] AFTER queue.prev(): returned track="${prevTrack?.title}", new currentIndex=${queue.currentIndex}`);
       playTrack(prevTrack);
       break;
     }
@@ -247,6 +249,7 @@ function setupKeyboard() {
   }
 
   process.stdin.on('keypress', (str, key) => {
+    console.error(`[DEBUG keypress] timestamp=${Date.now()} str="${str}" key.name="${key?.name}"`);
     if (key && key.ctrl && key.name === 'c') {
       // Ctrl+C: same as 'q'
       handleKey('q');
